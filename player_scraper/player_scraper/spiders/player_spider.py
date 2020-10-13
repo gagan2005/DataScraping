@@ -55,22 +55,30 @@ class PlayerSpider(scrapy.Spider):
         playerdata={}
 
         playerdata['name']=response.css('h1[itemprop="name"] span').css('span::text').get()
+
+
         # Get standard stat table using its identifier
         standard_stats=self.getlast3seasonrows(response , '#div_stats_standard_ks_collapsed tbody' )
 
         features=['goals_per90','assists_per90','goals_assists_pens_per90']
+
+        # Puts the feature and their value in player data object
         self.getfeaturevals( standard_stats , features ,playerdata)
         
 
 
         yield playerdata
 
+    
+    # Helper functions for parse function
     def getfeaturevals(self,table , features , playerdata):
-        for row in table:
-            for feature in features:
+        for feature in features:
+            playerdata[feature]=[]
+            for row in table:
+                
                 val=row.css('td[data-stat="{0}"]'.format(feature)).css('td::text').get()
                 # val=float(val)
-                playerdata[feature]=val
+                playerdata[feature].append(val)
 
 
     def getlast3seasonrows(self,response , id):
