@@ -42,10 +42,8 @@ class PlayerSpider(scrapy.Spider):
             url=a.get()
             if(url=="" or url==None):
                 continue
-            x=url.split('/')
-            url='/'+x[1]+'/'+x[2]+'/'+x[3]
             # self.log("url="+url)
-            yield response.follow(url+'/all_comps/', callback=self.parse)
+            yield response.follow(url, callback=self.parse)
     
 
 
@@ -58,13 +56,14 @@ class PlayerSpider(scrapy.Spider):
 
 
         # Get standard stat table using its identifier
-        standard_stats=self.getlast3seasonrows(response , '#div_stats_standard_ks_collapsed tbody' )
+        standard_stats=self.getlast3seasonrows(response , '#div_stats_standard_dom_lg tbody' )
 
         features=['goals_per90','assists_per90','goals_assists_pens_per90']
 
         # Puts the feature and their value in player data object
         self.getfeaturevals( standard_stats , features ,playerdata)
         
+        ############# more tables here
 
 
         yield playerdata
@@ -75,7 +74,6 @@ class PlayerSpider(scrapy.Spider):
         for feature in features:
             playerdata[feature]=[]
             for row in table:
-                
                 val=row.css('td[data-stat="{0}"]'.format(feature)).css('td::text').get()
                 # val=float(val)
                 playerdata[feature].append(val)
