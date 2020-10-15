@@ -15,7 +15,7 @@ def makecsv(file,season):
 
 
 
-filename =  'tutorial/playerdata.csv'
+filename =  'playerdata.csv'
 season1 = []
 season2 = []
 season3 = []
