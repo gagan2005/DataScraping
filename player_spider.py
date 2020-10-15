@@ -4,7 +4,7 @@ import scrapy
 class PlayerSpider(scrapy.Spider):
     name = "Player"
     baseurl = 'https://fbref.com'
-    # start_urls= ['https://fbref.com/en/players/6025fab1/all_comps']
+    #start_urls= ['https://fbref.com/en/players/6025fab1/dom_lg']
 
     # Comment this function and uncomment start_urls to test for one player
     def start_requests(self):
@@ -54,14 +54,18 @@ class PlayerSpider(scrapy.Spider):
 
         playerdata['name']=response.css('h1[itemprop="name"] span').css('span::text').get()
 
+        table_ids = ['#div_stats_standard_dom_lg tbody', '#div_stats_shooting_dom_lg tbody', '#div_stats_passing_dom_lg tbody', '#div_stats_gca_dom_lg tbody', '#div_stats_defense_dom_lg tbody', '#div_stats_possession_dom_lg tbody', '#div_stats_misc_dom_lg tbody']
 
-        # Get standard stat table using its identifier
-        standard_stats=self.getlast3seasonrows(response , '#div_stats_standard_dom_lg tbody' )
 
-        features=['goals_per90','assists_per90','goals_assists_pens_per90']
+        features=[['goals_per90','assists_per90','goals_assists_pens_per90', 'goals_pens_per90', 'goals_assists_pens_per90'], ['goals','shots_total_per90', 'shots_on_target_per90', 'shots_free_kicks', 'pens_made'], ['passes_completed','passes','passes_completed_short','passes_completed_medium','passes_completed_long'],['sca','sca_per90','gca_per90'],['tackles', 'tackles_won', 'dribbles_vs', 'pressures', 'pressure_regains', 'blocks', 'blocked_shots'], ['dribbles_completed', 'carry_distance'], ['fouls','aerials_won', 'ball_recoveries']]
 
-        # Puts the feature and their value in player data object
-        self.getfeaturevals( standard_stats , features ,playerdata)
+        # Total 7 tables in the page scrapping from
+        for i in range(7):
+            # Get standard stat table using its identifier
+            standard_stats=self.getlast3seasonrows(response , table_ids[i] )
+
+            # Puts the feature and their value in player data object
+            self.getfeaturevals( standard_stats , features[i] ,playerdata)
         
         ############# more tables here
 
@@ -86,5 +90,7 @@ class PlayerSpider(scrapy.Spider):
         # self.log(response.css('body').get())
         rows=stat_table.css('tr')
 
+        if len(rows) < 3:
+            return rows
         #Getting last 3 rows
         return rows[-3:]
