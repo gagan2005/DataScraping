@@ -1,9 +1,21 @@
 import scrapy
 
+features=[['goals_per90','assists_per90','goals_assists_pens_per90', 'goals_pens_per90', 'goals_assists_pens_per90'],\
+            ['goals','shots_total_per90', 'shots_on_target_per90', 'shots_free_kicks', 'pens_made'],\
+            ['passes_completed','passes','passes_completed_short','passes_completed_medium','passes_completed_long']\
+            ,['sca','sca_per90','gca_per90'],\
+            ['tackles', 'tackles_won', 'dribbles_vs', 'pressures', 'pressure_regains', 'blocks', 'blocked_shots'], ['dribbles_completed', 'carry_distance'], \
+            ['fouls','aerials_won', 'ball_recoveries']]
+
 
 class PlayerSpider(scrapy.Spider):
     name = "Player"
     baseurl = 'https://fbref.com'
+    #League
+    league = "La Liga"
+
+   
+
     #start_urls= ['https://fbref.com/en/players/6025fab1/dom_lg']
 
     # Comment this function and uncomment start_urls to test for one player
@@ -11,18 +23,18 @@ class PlayerSpider(scrapy.Spider):
         yield scrapy.Request(url = self.baseurl+'/en/comps', callback=self.getleagueurl)
 
     def getleagueurl(self , response):
-        url=self.scrapeurl('La Liga',response)
+        url=self.scrapeurl(self.league,response)
         yield scrapy.Request(url=self.baseurl+url , callback=self.getseasonurl)
 
     def getseasonurl(self , response ):
         url=self.scrapeurl('2020-2021',response)
         yield scrapy.Request(url=self.baseurl+url , callback=self.getteamurls)
 
-    def scrapeurl(self ,s,response):
+    def scrapeurl(self ,leagueName,response):
         comps_tables = response.css('table')
         for a in comps_tables:
             for b in a.css('a'):
-                if b.css('a::text').get()==s:
+                if b.css('a::text').get()==leagueName:
                     return b.css('a::attr(href)').get()
 
     def getteamurls(self , response):
@@ -57,7 +69,7 @@ class PlayerSpider(scrapy.Spider):
         table_ids = ['#div_stats_standard_dom_lg tbody', '#div_stats_shooting_dom_lg tbody', '#div_stats_passing_dom_lg tbody', '#div_stats_gca_dom_lg tbody', '#div_stats_defense_dom_lg tbody', '#div_stats_possession_dom_lg tbody', '#div_stats_misc_dom_lg tbody']
 
 
-        features=[['goals_per90','assists_per90','goals_assists_pens_per90', 'goals_pens_per90', 'goals_assists_pens_per90'], ['goals','shots_total_per90', 'shots_on_target_per90', 'shots_free_kicks', 'pens_made'], ['passes_completed','passes','passes_completed_short','passes_completed_medium','passes_completed_long'],['sca','sca_per90','gca_per90'],['tackles', 'tackles_won', 'dribbles_vs', 'pressures', 'pressure_regains', 'blocks', 'blocked_shots'], ['dribbles_completed', 'carry_distance'], ['fouls','aerials_won', 'ball_recoveries']]
+        
 
         # Total 7 tables in the page scrapping from
         for i in range(7):
